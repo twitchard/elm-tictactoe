@@ -2,4 +2,4 @@ module ConnectingView exposing (..)
 
 import Html
 
-connectingView = Html.div [Html.text "connecting..."] []
+connectingView = Html.div [] [Html.text "connecting..."]
