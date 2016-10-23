@@ -9,9 +9,10 @@
         <div id="main"></div>
         <script src="main.js"></script>
         <script>
+            var random = ~~(Math.random() * 100000000000000)
             var node = document.getElementById('main');
             var app = Elm.Main.embed(node, {
-                id: 'ueo',
+                id: String(random),
             });
             // Note: if your Elm module is named "MyThing.Root" you
             // would call "Elm.MyThing.Root.embed(node)" instead.

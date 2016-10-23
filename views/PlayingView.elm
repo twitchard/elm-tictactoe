@@ -2,5 +2,6 @@ module PlayingView exposing (..)
 
 import Html
 
-playingView p = Html.div [] []
 
+playingView players marker name version board =
+    Html.div [] []
