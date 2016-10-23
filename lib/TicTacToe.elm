@@ -10,17 +10,16 @@ type Marker
     | O
 
 
-type alias MaybeChoice =
-    { x : Maybe String
-    , o : Maybe String
-    }
-
 
 type Choice
     = Nobody
     | TheyChose Marker String
     | YouChose Marker
 
+type alias MaybeChoice =
+    { x : Maybe String
+    , o : Maybe String
+    }
 
 encodeChoice : String -> Choice -> Json.Encode.Value
 encodeChoice you choice =
@@ -126,16 +125,42 @@ markerOf id players =
         Nothing
 
 
-move : Int -> Int -> Marker -> Board -> Maybe Board
-move row column marker board =
-    Just emptyBoard
+sum : Array Int -> Int
+sum arrayOfInts = Array.foldl (+) 0 arrayOfInts
+
+countInArray : a -> Array a -> Int
+countInArray what = Array.foldl (\x n -> if x == what then n + 1 else n) 0
+
+turn : Board -> Marker 
+turn board = 
+  let 
+    countX = sum <| Array.map (countInArray (Just X)) board
+    countO = sum <| Array.map (countInArray (Just O)) board
+  in
+    if countX >= countO then X else O
+
+move : Int -> Int -> Marker -> Board -> Result String Board
+move x y marker board =
+  let maybeRow = Array.get y board
+      whoseTurn = turn board
+  in
+    if not (whoseTurn == marker) then Err "It is not your turn" else
+      case maybeRow of 
+        Nothing -> Err "There was no such row"
+        Just row ->
+          let maybeCell = Array.get x row in
+            case maybeCell of
+              Nothing -> Err "There was no such column"
+              Just (Just _) -> Err "There was already a piece there"
+              Just Nothing -> Ok <|
+                Array.set y (Array.set x (Just marker) row) board
 
 
 decodeMarker : String -> Result String Marker
 decodeMarker s =
-    if s == "X" then
+    if s == markerString X then
         Ok X
-    else if s == "O" then
+    else if s == markerString O then
         Ok O
     else
         Err "Invalid Marker"

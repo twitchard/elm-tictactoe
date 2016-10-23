@@ -160,10 +160,10 @@ update msg model =
                     ( model, sendSharedState wsURL model.id name version (encodeSharedState model.id sharedState) )
             in
                 case (move row column marker board) of
-                    Nothing ->
-                        ( { model | debug = "Invalid move" }, Cmd.none )
+                    Err errmessage ->
+                        ( { model | debug = errmessage }, Cmd.none )
 
-                    Just newBoard ->
+                    Ok newBoard ->
                         sendState (SharedGame (Game newBoard players))
 
         _ ->
@@ -184,7 +184,7 @@ view model =
                 choosingView name Choose choice
 
             Playing players marker name version board ->
-                playingView players marker name version board
+                playingView players marker name version board Move
         , Html.div [] [ debugView model.debug ]
         ]
 
