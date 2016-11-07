@@ -1,4 +1,5 @@
 const express = require('express')
 const app = express()
 app.use(express.static('public'))
+console.log('Serving files under ./public/ on port 3000')
 app.listen(3000)

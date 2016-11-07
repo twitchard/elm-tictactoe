@@ -18,6 +18,8 @@ import WebSocket
 wsURL =
     "ws://localhost:8000"
 
+type alias GameName = String
+type alias VersionMarker = String
 
 type Msg
     = Noop
@@ -31,9 +33,9 @@ type Msg
 
 type State
     = Naming String
-    | Submitted String
-    | Choosing String String Choice
-    | Playing Players Marker String String Board
+    | Submitted GameName
+    | Choosing GameName VersionMarker Choice
+    | Playing Players Marker GameName VersionMarker Board
 
 
 type alias Model =
@@ -87,7 +89,7 @@ eventHandler event =
             GameUpdate version state
 
 
-handleGameUpdate : String -> String -> SharedState -> Model -> ( Model, Cmd Msg )
+handleGameUpdate : GameName -> VersionMarker -> SharedState -> Model -> ( Model, Cmd Msg )
 handleGameUpdate name version newState model =
     case newState of
         SharedChoice c ->

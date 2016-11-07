@@ -1,4 +1,4 @@
-module TicTacToe exposing (Marker(X, O), Board, Choice(Nobody, TheyChose, YouChose), Game, Players, markerOf, boardDecoder, choiceDecoder, gameDecoder, encodeGame, encodeChoice, emptyBoard, move, markerString)
+module TicTacToe exposing (Marker(X, O), Board, Choice(Nobody, TheyChose, YouChose), Game, Players, markerOf, boardDecoder, choiceDecoder, gameDecoder, encodeGame, encodeChoice, emptyBoard, move, markerString, countInArray, turn)
 
 import Json.Decode exposing (..)
 import Json.Encode
@@ -137,7 +137,7 @@ turn board =
     countX = sum <| Array.map (countInArray (Just X)) board
     countO = sum <| Array.map (countInArray (Just O)) board
   in
-    if countX >= countO then X else O
+    if countX <= countO then X else O
 
 move : Int -> Int -> Marker -> Board -> Result String Board
 move x y marker board =
