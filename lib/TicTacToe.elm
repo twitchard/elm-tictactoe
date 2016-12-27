@@ -15,10 +15,12 @@ type Choice
     | TheyChose Marker String
     | YouChose Marker
 
+
 type alias MaybeChoice =
     { x : Maybe String
     , o : Maybe String
     }
+
 
 encodeChoice : String -> Choice -> Json.Encode.Value
 encodeChoice you choice =
@@ -125,75 +127,130 @@ markerOf id players =
 
 
 sum : Array Int -> Int
-sum arrayOfInts = Array.foldl (+) 0 arrayOfInts
+sum arrayOfInts =
+    Array.foldl (+) 0 arrayOfInts
+
 
 countInArray : a -> Array a -> Int
-countInArray what = Array.foldl (\x n -> if x == what then n + 1 else n) 0
+countInArray what =
+    Array.foldl
+        (\x n ->
+            if x == what then
+                n + 1
+            else
+                n
+        )
+        0
 
-turn : Board -> Marker 
-turn board = 
-  let 
-    countX = sum <| Array.map (countInArray (Just X)) board
-    countO = sum <| Array.map (countInArray (Just O)) board
-  in
-    if countX <= countO then X else O
 
+turn : Board -> Marker
+turn board =
+    let
+        countX =
+            sum <| Array.map (countInArray (Just X)) board
+
+        countO =
+            sum <| Array.map (countInArray (Just O)) board
+    in
+        if countX <= countO then
+            X
+        else
+            O
 
 
 move : Int -> Int -> Marker -> Board -> Result String Board
 move x y marker board =
-  let maybeRow = Array.get y board
-      whoseTurn = turn board
-  in
-    if not (whoseTurn == marker) then Err "It is not your turn" else
-      case maybeRow of 
-        Nothing -> Err "There was no such row"
-        Just row ->
-          let maybeCell = Array.get x row in
-            case maybeCell of
-              Nothing -> Err "There was no such column"
-              Just (Just _) -> Err "There was already a piece there"
-              Just Nothing -> Ok <|
-                Array.set y (Array.set x (Just marker) row) board
+    let
+        maybeRow =
+            Array.get y board
 
-type alias Victory = ((Int, Int), (Int, Int), (Int, Int))
+        whoseTurn =
+            turn board
+    in
+        if not (whoseTurn == marker) then
+            Err "It is not your turn"
+        else
+            case maybeRow of
+                Nothing ->
+                    Err "There was no such row"
+
+                Just row ->
+                    let
+                        maybeCell =
+                            Array.get x row
+                    in
+                        case maybeCell of
+                            Nothing ->
+                                Err "There was no such column"
+
+                            Just (Just _) ->
+                                Err "There was already a piece there"
+
+                            Just Nothing ->
+                                Ok <|
+                                    Array.set y (Array.set x (Just marker) row) board
+
+
+type alias Victory =
+    ( ( Int, Int ), ( Int, Int ), ( Int, Int ) )
+
 
 diagonalVictories =
-  [ ((0, 0), (1,1), (2,2))
-  , ((2, 0), (1,1), (0,2))
-  ]
+    [ ( ( 0, 0 ), ( 1, 1 ), ( 2, 2 ) )
+    , ( ( 2, 0 ), ( 1, 1 ), ( 0, 2 ) )
+    ]
 
-horizontalVictory x = ( (0, x), (1, x), (2, x) )
-verticalVictory x = ( (x, 0), (x, 1), (x, 2) )
+
+horizontalVictory x =
+    ( ( 0, x ), ( 1, x ), ( 2, x ) )
+
+
+verticalVictory x =
+    ( ( x, 0 ), ( x, 1 ), ( x, 2 ) )
+
 
 victories : List Victory
 victories =
-  [ horizontalVictory 0
-  , horizontalVictory 1
-  , horizontalVictory 2
-  , verticalVictory 0
-  , verticalVictory 1
-  , verticalVictory 2
-  ] ++ diagonalVictories
+    [ horizontalVictory 0
+    , horizontalVictory 1
+    , horizontalVictory 2
+    , verticalVictory 0
+    , verticalVictory 1
+    , verticalVictory 2
+    ]
+        ++ diagonalVictories
 
-victor : Board -> Victory -> Maybe (Marker, Victory)
-victor board ((ax, ay), (bx, by), (cx, cy)) = 
-  let 
-    fst = (Array.get ay board) `Maybe.andThen` (\row -> Array.get ax row)
-    snd = (Array.get by board) `Maybe.andThen` (\row -> Array.get bx row)
-    thd = (Array.get cy board) `Maybe.andThen` (\row -> Array.get cx row)
-  in
-    case fst of 
-      Nothing -> Nothing
-      Just Nothing -> Nothing
-      Just (Just victor) ->
-        if (fst == snd) && (snd == thd)
-        then Just (victor, ((ax, ay), (bx, by), (cx, cy)))
-        else Nothing
 
-won : Board -> Maybe (Marker, Victory)
-won board = 
-  Maybe.oneOf (List.map (victor board) victories)
+victor : Board -> Victory -> Maybe ( Marker, Victory )
+victor board ( ( ax, ay ), ( bx, by ), ( cx, cy ) ) =
+    let
+        fst =
+            (Array.get ay board) `Maybe.andThen` (\row -> Array.get ax row)
+
+        snd =
+            (Array.get by board) `Maybe.andThen` (\row -> Array.get bx row)
+
+        thd =
+            (Array.get cy board) `Maybe.andThen` (\row -> Array.get cx row)
+    in
+        case fst of
+            Nothing ->
+                Nothing
+
+            Just Nothing ->
+                Nothing
+
+            Just (Just victor) ->
+                if (fst == snd) && (snd == thd) then
+                    Just ( victor, ( ( ax, ay ), ( bx, by ), ( cx, cy ) ) )
+                else
+                    Nothing
+
+
+won : Board -> Maybe ( Marker, Victory )
+won board =
+    Maybe.oneOf (List.map (victor board) victories)
+
 
 decodeMarker : String -> Result String Marker
 decodeMarker s =
